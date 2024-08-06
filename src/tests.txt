@@ -1,0 +1,4 @@
+# test 1: stack_underflow for every op
+# test 2: stack overflow
+# test 3: operation functionality tests
+# test 4: Constants loading test
