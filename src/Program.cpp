@@ -28,7 +28,7 @@ auto Program::dissassemble(std::string_view output_filename) -> void {
   // then output the bytecode
   output_file << "BYTECODE BEGINS:\n";
   for (std::size_t i = 0; i < Bytecode.size();) {
-    output_file << dissassembleInstruction(i) << " " << i << "\n";
+    output_file << dissassembleInstruction(i) << "\n";
   }
   output_file.close();
 }
@@ -57,6 +57,15 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
   case HALT:
     ++i;
     return "HALT";
+  case MUL:
+    ++i;
+    return "MUL";
+  case DIV:
+    ++i;
+    return "DIV";
+  case NEGATE:
+    ++i;
+    return "NEGATE";
   default:
     ++i;
     return "INVALID_OP";
@@ -66,7 +75,8 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
 auto Program::dissassembleConstant(std::size_t &i) -> std::string {
   assert(i + 1 < Bytecode.size() &&
          "Not enought bytecode to disassemble constant instruction");
+  auto constant = "PUSHC " + std::to_string(Bytecode[i + 1]);
   i += 2;
-  return "PUSHC " + std::to_string(Bytecode[i + 1]); // the second is index of
-                                                     // the constant in the pool
+  return constant; // the second is index of
+                   // the constant in the pool
 }

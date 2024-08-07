@@ -3,11 +3,17 @@
 #include <cassert>
 #include <iostream>
 
+static constexpr bool debug_stack = false;
+
 VM::VM(Program &bytecode) : bytecode_{bytecode} {}
 
 auto VM::run() -> VMState {
   while (state_ == VMState::OK) {
     state_ = executeOp();
+    if constexpr (debug_stack) {
+      std::cout << "======\n";
+      printStack();
+    }
   }
   switch (state_) {
   case VMState::COMPILE_ERR:
@@ -22,7 +28,8 @@ auto VM::run() -> VMState {
     std::cerr << "Stack underflow!\n";
     break;
   case VMState::HALTED:
-    std::cout << stack_[stack_top_].Value.AsDouble << "\n";
+    std::cout << "Program finished with code: "
+              << stack_[stack_top_ - 1].Value.AsDouble << "\n";
     break;
   default:
     break;
@@ -43,46 +50,45 @@ auto VM::run() -> VMState {
 auto VM::executeOp() -> VMState {
   switch (bytecode_.Bytecode[PC_]) {
   case POP:
-    if (!check(VMState::STACK_UNDERFLOW, 1)) {
-      state_ = VMState::STACK_UNDERFLOW;
-      return state_;
-    }
     pop();
     break;
   case PUSHC:
     pushc();
     break;
   case ADD:
-    if (!check(VMState::STACK_UNDERFLOW, 2)) {
-      state_ = VMState::STACK_UNDERFLOW;
-      return state_;
-    }
     add();
     break;
   case SUB:
-    if (!check(VMState::STACK_UNDERFLOW, 2)) {
-      state_ = VMState::STACK_UNDERFLOW;
-      return state_; // we return early so printing the stack shows which instr
-                     // failed.
-    }
     sub();
+    break;
+  case MUL:
+    mul();
+    break;
+  case DIV:
+    div();
+    break;
+  case NEGATE:
+    negate();
     break;
   case HALT:
     state_ = VMState::HALTED;
-    std::cout << stack_[stack_top_ - 1].Value.AsDouble << "\n";
     break;
   default:
     state_ = VMState::RUNTIME_ERR;
     error_ = "Invalid instruction!";
     break;
   }
-  ++PC_;
+  // we do this so that the right instruction prints out when we
+  // debug the stack. The PC_ stays on the last consumed instruction.
+  if (state_ == VMState::OK) {
+    ++PC_;
+  }
   return state_;
 }
 
 auto VM::pushc() -> void {
   assert((PC_ + 1 < bytecode_.Bytecode.size()) &&
-         "No operand for instruction PUSHC!");
+         "No operand for instruction PUSHC!"); // need an operand
   PC_++;
   auto lookup_index = static_cast<std::size_t>(bytecode_.Bytecode[PC_]);
   auto constant = bytecode_.getConstant(lookup_index);
@@ -90,6 +96,10 @@ auto VM::pushc() -> void {
 }
 
 auto VM::pop() -> VortexValue {
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return {};
+  }
   --stack_top_;              // shrink the stack
   return stack_[stack_top_]; // return the element
 }
@@ -104,6 +114,10 @@ auto VM::push(VortexValue value) -> void {
 }
 
 auto VM::add() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
   auto b = pop();
   auto a = pop();
   // TODO: type checking
@@ -112,12 +126,60 @@ auto VM::add() -> void {
 }
 
 auto VM::sub() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
   auto b = pop();
   auto a = pop();
   // TODO: type checking
   push(VortexValue{.Type = ValueType::DOUBLE,
                    .Value = {a.Value.AsDouble - b.Value.AsDouble}});
 }
+
+auto VM::mul() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto b = pop();
+  auto a = pop();
+  // TODO: type checking
+  push(VortexValue{.Type = ValueType::DOUBLE,
+                   .Value = {a.Value.AsDouble * b.Value.AsDouble}});
+}
+
+auto VM::div() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto b = pop();
+  auto a = pop();
+  // TODO: type checking
+  push(VortexValue{.Type = ValueType::DOUBLE,
+                   .Value = {a.Value.AsDouble / b.Value.AsDouble}});
+}
+
+auto VM::negate() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto rhs = pop();
+  push(VortexValue{.Type = ValueType::DOUBLE, .Value = {-rhs.Value.AsDouble}});
+}
+
+auto VM::eq() -> void {
+  // TODO: typechecking first.
+}
+
+auto VM::lessThanOrEqual() -> void {}
+auto VM::greaterThanOrEqual() -> void {}
+
+auto VM::greater() -> void {}
+
+auto VM::less() -> void {}
 
 auto VM::check(VMState for_state, std::size_t expected_size) -> bool {
   assert((for_state == VMState::STACK_OVERFLOW ||

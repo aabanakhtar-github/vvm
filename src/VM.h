@@ -27,6 +27,14 @@ private:
   auto pop() -> VortexValue;
   auto add() -> void;
   auto sub() -> void;
+  auto mul() -> void;
+  auto div() -> void;
+  auto negate() -> void;
+  auto eq() -> void;
+  auto lessThanOrEqual() -> void;
+  auto greaterThanOrEqual() -> void;
+  auto greater() -> void;
+  auto less() -> void;
   // safety
   // returns true if the state is ok.
   auto check(VMState for_state, std::size_t expected_size = 0) -> bool;

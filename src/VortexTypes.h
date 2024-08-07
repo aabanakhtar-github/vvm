@@ -5,18 +5,18 @@
 #include <string>
 
 enum OpCode : std::uint8_t {
-  PUSHC = 0,
+  PUSHC = 0, // load constant
   POP,
   ADD,
   SUB,
   MUL,
   DIV,
-  NEG, // - (pop())
-  EQ,  // ==
-  LEQ, // <=
-  GEQ, // >=
-  GT,  // >
-  LT,  // <
+  NEGATE,     // - (pop())
+  EQ,         // ==
+  LESS_EQ,    // <=
+  GREATER_EQ, // >=
+  GREATER,    // >
+  LESS,       // <
   HALT,
   INVALID_OP
 };
