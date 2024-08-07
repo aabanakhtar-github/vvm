@@ -12,3 +12,4 @@ set(SOURCES
 
 add_executable(${PROJECT_NAME} src/main.cpp ${SOURCES}) 
 add_library(lib${PROJECT_NAME} STATIC ${SOURCES})
+set(VVM_INCLUDE_DIRS src)
