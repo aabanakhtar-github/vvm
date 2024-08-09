@@ -9,12 +9,12 @@ auto Program::pushCode(std::uint8_t code, std::size_t line) -> void {
   lines_.push_back(line);
 }
 
-auto Program::addConstant(VortexValue constant) -> void {
+auto Program::addConstant(VortexValue constant) -> std::size_t {
   if (Constants.size() >= 255) {
-    std::cerr << "Too many constants in one set of bytecode!\n";
-    return;
+    return -1;
   }
   Constants.push_back(constant);
+  return Constants.size() - 1;
 }
 
 auto Program::dissassemble(std::string_view output_filename) -> void {

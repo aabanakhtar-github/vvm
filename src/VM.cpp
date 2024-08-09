@@ -87,6 +87,7 @@ auto VM::executeOp() -> VMState {
 }
 
 auto VM::pushc() -> void {
+  std::cout << PC_ << std::endl;
   assert((PC_ + 1 < bytecode_.Bytecode.size()) &&
          "No operand for instruction PUSHC!"); // need an operand
   PC_++;
