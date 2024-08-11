@@ -9,7 +9,7 @@ auto Program::pushCode(std::uint8_t code, std::size_t line) -> void {
   lines_.push_back(line);
 }
 
-auto Program::addConstant(VortexValue constant) -> std::size_t {
+auto Program::addConstant(VortexValue constant) -> std::int32_t {
   if (Constants.size() >= 255) {
     return -1;
   }
@@ -73,10 +73,15 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
 }
 
 auto Program::dissassembleConstant(std::size_t &i) -> std::string {
-  assert(i + 1 < Bytecode.size() &&
+  assert(i + 3 < Bytecode.size() &&
          "Not enought bytecode to disassemble constant instruction");
-  auto constant = "PUSHC " + std::to_string(Bytecode[i + 1]);
-  i += 2;
-  return constant; // the second is index of
-                   // the constant in the pool
+  auto b1 = static_cast<std::int32_t>(
+      Bytecode[i + 1]); // the three bytes of the instruction
+  auto b2 = static_cast<std::int32_t>(Bytecode[i + 2]);
+  auto b3 = static_cast<std::int32_t>(Bytecode[i + 3]);
+  auto constant_index = (b1 << 16) | (b2 << 8) | (b3);
+  auto instr = "PUSHC " + std::to_string(constant_index);
+
+  i += 4; // 4 byte instruction (instr b0, b1, b2)
+  return instr;
 }

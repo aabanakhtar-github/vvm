@@ -15,7 +15,7 @@ public:
   Program() = default;
 
   auto pushCode(std::uint8_t code, std::size_t line) -> void;
-  auto addConstant(VortexValue constant) -> std::size_t;
+  auto addConstant(VortexValue constant) -> std::int32_t;
 
   auto dissassemble(std::string_view output_filename) -> void;
   auto dissassembleInstruction(std::size_t &i) -> std::string;

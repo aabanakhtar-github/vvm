@@ -87,13 +87,20 @@ auto VM::executeOp() -> VMState {
 }
 
 auto VM::pushc() -> void {
-  std::cout << PC_ << std::endl;
-  assert((PC_ + 1 < bytecode_.Bytecode.size()) &&
-         "No operand for instruction PUSHC!"); // need an operand
-  PC_++;
-  auto lookup_index = static_cast<std::size_t>(bytecode_.Bytecode[PC_]);
-  auto constant = bytecode_.getConstant(lookup_index);
+  assert((PC_ + 3 < bytecode_.Bytecode.size()) &&
+         "Operand of invalid or "
+         "non-existent size for "
+         "instruction PUSHC!"); // need a 24bit
+                                // operand
+
+  auto b1 = static_cast<std::int32_t>(
+      bytecode_.Bytecode[PC_ + 1]); // the three bytes of the instruction
+  auto b2 = static_cast<std::int32_t>(bytecode_.Bytecode[PC_ + 2]);
+  auto b3 = static_cast<std::int32_t>(bytecode_.Bytecode[PC_ + 3]);
+  auto index = (b1 << 16) | (b2 << 8) | (b3); // magic stuff
+  auto constant = bytecode_.getConstant(static_cast<std::size_t>(index));
   push(constant);
+  PC_ += 3; // the 4th gets removed in the main executeOp func
 }
 
 auto VM::pop() -> VortexValue {
