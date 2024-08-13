@@ -66,6 +66,24 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
   case NEGATE:
     ++i;
     return "NEGATE";
+  case NOT:
+    ++i;
+    return "NOT";
+  case EQ:
+    ++i;
+    return "EQ";
+  case LESS_EQ:
+    ++i;
+    return "LESS_EQ";
+  case GREATER_EQ:
+    ++i;
+    return "GREATER_EQ";
+  case GREATER:
+    ++i;
+    return "GREATER";
+  case LESS:
+    ++i;
+    return "LESS";
   default:
     ++i;
     return "INVALID_OP";

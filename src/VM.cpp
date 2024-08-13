@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iostream>
 
+#define DO_BINARY_OP
+
 static constexpr bool debug_stack = false;
 
 VM::VM(Program &bytecode) : bytecode_{bytecode} {}
@@ -19,7 +21,9 @@ auto VM::run() -> VMState {
   case VMState::COMPILE_ERR:
     break;
   case VMState::RUNTIME_ERR:
-    std::cerr << error_ << "\n";
+    // TODO: add support for proper error handling between both the front and
+    // the back
+    std::cerr << "TODO: addd support for proper error handling.\n";
     break;
   case VMState::STACK_OVERFLOW:
     std::cerr << "Stack overflow!\n";
@@ -29,7 +33,7 @@ auto VM::run() -> VMState {
     break;
   case VMState::HALTED:
     std::cout << "Program finished with code: "
-              << stack_[stack_top_ - 1].Value.AsDouble << "\n";
+              << stack_[stack_top_ - 1].asString() << "\n";
     break;
   default:
     break;
@@ -69,6 +73,24 @@ auto VM::executeOp() -> VMState {
     break;
   case NEGATE:
     negate();
+    break;
+  case NOT:
+    knot();
+    break;
+  case EQ:
+    eq();
+    break;
+  case LESS:
+    less();
+    break;
+  case LESS_EQ:
+    lessThanOrEqual();
+    break;
+  case GREATER:
+    greater();
+    break;
+  case GREATER_EQ:
+    greaterThanOrEqual();
     break;
   case HALT:
     state_ = VMState::HALTED;
@@ -164,9 +186,26 @@ auto VM::div() -> void {
   }
   auto b = pop();
   auto a = pop();
+  if (b.Value.AsDouble == 0.0) {
+    // division by zero is not good for the vm
+    error_ = "Division by zero!";
+    state_ = VMState::RUNTIME_ERR;
+  }
   // TODO: type checking
   push(VortexValue{.Type = ValueType::DOUBLE,
                    .Value = {a.Value.AsDouble / b.Value.AsDouble}});
+}
+
+auto VM::knot() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto rhs = pop();
+  auto val = VortexValue{};
+  val.Type = ValueType::BOOL;
+  val.Value.AsBool = isFalse(val);
+  push(val);
 }
 
 auto VM::negate() -> void {
@@ -179,15 +218,77 @@ auto VM::negate() -> void {
 }
 
 auto VM::eq() -> void {
-  // TODO: typechecking first.
+  // TODO: typechecking  using assert and then a dedicated static analysis
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto b = pop();
+  auto a = pop();
+  auto val = VortexValue{};
+  val.Type = ValueType::BOOL;
+  val.Value.AsBool = a.Value.AsDouble == b.Value.AsDouble;
+  val.Type = ValueType::BOOL;
+  push(val);
 }
 
-auto VM::lessThanOrEqual() -> void {}
-auto VM::greaterThanOrEqual() -> void {}
+auto VM::lessThanOrEqual() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto b = pop();
+  auto a = pop();
+  auto val = VortexValue{};
+  val.Type = ValueType::BOOL;
+  val.Value.AsBool = a.Value.AsDouble <= b.Value.AsDouble;
+  push(val);
+}
 
-auto VM::greater() -> void {}
+auto VM::greaterThanOrEqual() -> void {
+  // TODO: typechecking  using assert and then a dedicated static analysis
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto b = pop();
+  auto a = pop();
+  auto val = VortexValue{};
+  val.Type = ValueType::BOOL;
+  val.Value.AsBool = a.Value.AsDouble >= b.Value.AsDouble;
+  val.Type = ValueType::BOOL;
+  push(val);
+}
 
-auto VM::less() -> void {}
+auto VM::greater() -> void {
+  // TODO: typechecking  using assert and then a dedicated static analysis
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto b = pop();
+  auto a = pop();
+  auto val = VortexValue{};
+  val.Type = ValueType::BOOL;
+  val.Value.AsBool = a.Value.AsDouble > b.Value.AsDouble;
+  val.Type = ValueType::BOOL;
+  push(val);
+}
+
+auto VM::less() -> void {
+  // TODO: typechecking  using assert and then a dedicated static analysis
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto b = pop();
+  auto a = pop();
+  auto val = VortexValue{};
+  val.Type = ValueType::BOOL;
+  val.Value.AsBool = a.Value.AsDouble < b.Value.AsDouble;
+  val.Type = ValueType::BOOL;
+  push(val);
+}
 
 auto VM::check(VMState for_state, std::size_t expected_size) -> bool {
   assert((for_state == VMState::STACK_OVERFLOW ||
@@ -214,9 +315,6 @@ auto VM::printStack() -> void {
   std::cout << "STACK BOTTOM is here. \n";
   std::cout << "Program counter: " << PC_ << "\n";
   for (std::size_t i = 0; i < stack_top_; ++i) {
-    switch (stack_[i].Type) {
-    case ValueType::DOUBLE:
-      std::cout << "DOUBLE: " << stack_[i].Value.AsDouble << "\n";
-    }
+    std::cout << stack_[i].asString() << "\n";
   }
 }

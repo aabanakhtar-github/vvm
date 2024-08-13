@@ -29,6 +29,8 @@ private:
   auto sub() -> void;
   auto mul() -> void;
   auto div() -> void;
+  // apparently C++ has a not keyword
+  auto knot() -> void;
   auto negate() -> void;
   auto eq() -> void;
   auto lessThanOrEqual() -> void;
@@ -41,6 +43,12 @@ private:
 
   // util
   auto printStack() -> void;
+  auto isFalse(VortexValue val) -> bool {
+    if (val.Type == ValueType::BOOL) {
+      return val.Value.AsBool == false;
+    }
+    return false;
+  }
 
 private:
   static constexpr std::size_t STACK_SIZE_ = 2048;
