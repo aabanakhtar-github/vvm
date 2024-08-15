@@ -1,8 +1,11 @@
 #include "Program.h"
 #include "VortexTypes.h"
 #include <cassert>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
+
+static constexpr auto UINT24_MAX = 16'777'215;
 
 auto Program::pushCode(std::uint8_t code, std::size_t line) -> void {
   Bytecode.push_back(code);
@@ -10,11 +13,17 @@ auto Program::pushCode(std::uint8_t code, std::size_t line) -> void {
 }
 
 auto Program::addConstant(VortexValue constant) -> std::int32_t {
-  if (Constants.size() >= 255) {
+  if (Constants.size() >= UINT24_MAX) {
     return -1;
   }
   Constants.push_back(constant);
   return Constants.size() - 1;
+}
+
+auto Program::createString(std::string_view contents) -> Object * {
+  auto index = Objects.size();
+  Objects.emplace_back(std::make_unique<StringObject>(std::string{contents}));
+  return (Objects.data() + sizeof(std::string) * index)->get();
 }
 
 auto Program::dissassemble(std::string_view output_filename) -> void {

@@ -4,13 +4,12 @@
 
 auto main(int, char **) -> int {
   auto prog = Program{};
-  prog.addConstant({.Type = ValueType::DOUBLE, .Value = {.AsBool = false}});
-  prog.addConstant({.Type = ValueType::DOUBLE, .Value = {5.0}});
+  auto ptr = prog.createString("Hello World");
+  prog.addConstant({.Type = ValueType::OBJECT, .Value = {.AsObject = ptr}});
   prog.pushCode(PUSHC, 0);
   prog.pushCode(0, 0);
   prog.pushCode(0, 0);
   prog.pushCode(0, 0);
-  prog.pushCode(NOT, 0);
   prog.pushCode(HALT, 0);
   prog.dissassemble("bytecode");
   auto vM = VM{prog};

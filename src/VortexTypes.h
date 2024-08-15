@@ -22,8 +22,22 @@ enum OpCode : std::uint8_t {
   INVALID_OP
 };
 
-enum class ValueType : std::uint8_t { DOUBLE, BOOL, NIL };
-struct Object {};
+enum class ValueType : std::uint8_t { DOUBLE, BOOL, NIL, OBJECT };
+enum class ObjectType : std::uint8_t { STR };
+
+struct Object {
+  ObjectType Type;
+
+  auto is(ObjectType type) -> bool { return Type == type; }
+  virtual auto asString() -> std::string { return "object"; }
+};
+
+struct StringObject : Object {
+  explicit StringObject(std::string_view s) : Str{s} { Type = ObjectType::STR; }
+
+  std::string Str;
+  virtual auto asString() -> std::string override { return "\"" + Str + "\""; }
+};
 
 struct VortexValue {
   union Value {
@@ -46,6 +60,8 @@ struct VortexValue {
     case ValueType::NIL:
       return "nil";
       break;
+    case ValueType::OBJECT:
+      return Value.AsObject->asString();
     }
   }
 };

@@ -43,11 +43,13 @@ private:
 
   // util
   auto printStack() -> void;
-  auto isFalse(VortexValue val) -> bool {
+  auto isTrue(VortexValue val) -> bool {
     if (val.Type == ValueType::BOOL) {
-      return val.Value.AsBool == false;
+      return val.Value.AsBool;
+    } else if (val.Type == ValueType::NIL) {
+      return false;
     }
-    return false;
+    return true;
   }
 
 private:

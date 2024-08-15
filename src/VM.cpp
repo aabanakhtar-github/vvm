@@ -204,7 +204,7 @@ auto VM::knot() -> void {
   auto rhs = pop();
   auto val = VortexValue{};
   val.Type = ValueType::BOOL;
-  val.Value.AsBool = isFalse(val);
+  val.Value.AsBool = !isTrue(rhs);
   push(val);
 }
 
