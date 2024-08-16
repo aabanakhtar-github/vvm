@@ -6,6 +6,9 @@
 
 enum OpCode : std::uint8_t {
   PUSHC = 0, // load constant
+  PUSH_TRUE,
+  PUSH_FALSE,
+  PUSH_NIL,
   POP,
   ADD,
   SUB,

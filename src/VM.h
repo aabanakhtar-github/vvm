@@ -37,6 +37,8 @@ private:
   auto greaterThanOrEqual() -> void;
   auto greater() -> void;
   auto less() -> void;
+  auto pushNil() -> void;
+  auto pushBool(bool val) -> void;
   // safety
   // returns true if the state is ok.
   auto check(VMState for_state, std::size_t expected_size = 0) -> bool;

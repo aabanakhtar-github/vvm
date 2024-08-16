@@ -59,6 +59,15 @@ auto VM::executeOp() -> VMState {
   case PUSHC:
     pushc();
     break;
+  case PUSH_TRUE:
+    pushBool(true);
+    break;
+  case PUSH_FALSE:
+    pushBool(false);
+    break;
+  case PUSH_NIL:
+    pushNil();
+    break;
   case ADD:
     add();
     break;
@@ -125,6 +134,16 @@ auto VM::pushc() -> void {
   PC_ += 3; // the 4th gets removed in the main executeOp func
 }
 
+auto VM::pushBool(bool val) -> void {
+  auto bval = VortexValue{.Type = ValueType::BOOL, .Value = {.AsBool = val}};
+  push(bval);
+}
+
+auto VM::pushNil() -> void {
+  auto val = VortexValue{.Type = ValueType::NIL, .Value = {.AsBool = false}};
+  push(val);
+}
+
 auto VM::pop() -> VortexValue {
   if (!check(VMState::STACK_UNDERFLOW, 1)) {
     state_ = VMState::STACK_UNDERFLOW;
@@ -144,15 +163,32 @@ auto VM::push(VortexValue value) -> void {
 }
 
 auto VM::add() -> void {
+  // TODO: debug assertions in the vortex error format see trello for more
   if (!check(VMState::STACK_UNDERFLOW, 2)) {
     state_ = VMState::STACK_UNDERFLOW;
     return;
   }
   auto b = pop();
   auto a = pop();
-  // TODO: type checking
-  push(VortexValue{.Type = ValueType::DOUBLE,
-                   .Value = {a.Value.AsDouble + b.Value.AsDouble}});
+
+  switch (a.Type) {
+  case ValueType::DOUBLE:
+    assert(a.Type == b.Type && "Cannot add a double and unknown type");
+    push(VortexValue{.Type = ValueType::DOUBLE,
+                     .Value = {a.Value.AsDouble + b.Value.AsDouble}});
+
+  case ValueType::OBJECT:
+    switch (a.Value.AsObject->Type) {
+    case ObjectType::STR:
+      assert(a.Type == b.Type && "Cannot add a string and unknown type");
+      // TODO: fill
+    }
+  default:
+    // should be unreachable after semantic analyzer/type checking is done;
+    error_ = "Binary operand + is not supported for this type.";
+    state_ = VMState::RUNTIME_ERR;
+    return;
+  }
 }
 
 auto VM::sub() -> void {
