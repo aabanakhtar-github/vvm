@@ -23,7 +23,8 @@ auto Program::addConstant(VortexValue constant) -> std::int32_t {
 auto Program::createString(std::string_view contents) -> Object * {
   auto index = Objects.size();
   Objects.emplace_back(std::make_unique<StringObject>(std::string{contents}));
-  return (Objects.data() + sizeof(std::string) * index)->get();
+  Objects.back()->Type = ObjectType::STR;
+  return Objects.back().get();
 }
 
 auto Program::dissassemble(std::string_view output_filename) -> void {
@@ -93,10 +94,17 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
   case LESS:
     ++i;
     return "LESS";
-  default:
+  case PUSH_NIL:
     ++i;
-    return "INVALID_OP";
+    return "PUSH_NIL";
+  case PUSH_TRUE:
+    ++i;
+    return "PUSH_TRUE";
+  case PUSH_FALSE:
+    ++i;
+    return "PUSH_FALSE";
   }
+  return "";
 }
 
 auto Program::dissassembleConstant(std::size_t &i) -> std::string {

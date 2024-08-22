@@ -170,24 +170,37 @@ auto VM::add() -> void {
   }
   auto b = pop();
   auto a = pop();
-
   switch (a.Type) {
-  case ValueType::DOUBLE:
-    assert(a.Type == b.Type && "Cannot add a double and unknown type");
-    push(VortexValue{.Type = ValueType::DOUBLE,
-                     .Value = {a.Value.AsDouble + b.Value.AsDouble}});
-
-  case ValueType::OBJECT:
+  case ValueType::OBJECT: {
+    /* HANDLE ADDING OBJECTS LIKE STRINGS */
     switch (a.Value.AsObject->Type) {
-    case ObjectType::STR:
-      assert(a.Type == b.Type && "Cannot add a string and unknown type");
-      // TODO: fill
+    case ObjectType::STR: {
+      // Convert these to string objects type
+      auto string_object1 = dynamic_cast<StringObject *>(a.Value.AsObject);
+      auto string_object2 = dynamic_cast<StringObject *>(b.Value.AsObject);
+      // add em all up
+      auto result =
+          bytecode_.createString(string_object1->Str + string_object2->Str);
+      push(VortexValue{.Type = ValueType::OBJECT, .Value{.AsObject = result}});
+      break;
     }
-  default:
-    // should be unreachable after semantic analyzer/type checking is done;
-    error_ = "Binary operand + is not supported for this type.";
+    default: { // will be unreachable after semantic analyzer
+      error_ = "Cannot handle adding objects of non-string type!";
+      state_ = VMState::RUNTIME_ERR;
+      break;
+    }
+    }
+  }
+  case ValueType::DOUBLE: {
+    // handle regular addition here
+    auto result = a.Value.AsDouble + b.Value.AsDouble;
+    push(VortexValue{.Type = ValueType::DOUBLE, .Value{.AsDouble = result}});
+    break;
+  }
+  default: // will be unreachable after semantic analzyer
+    error_ = "Cannot add two non addable types!";
     state_ = VMState::RUNTIME_ERR;
-    return;
+    break;
   }
 }
 

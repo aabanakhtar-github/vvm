@@ -9,6 +9,9 @@ enum OpCode : std::uint8_t {
   PUSH_TRUE,
   PUSH_FALSE,
   PUSH_NIL,
+  SAVE_GLOB,
+  LOAD_GLOB,
+  ASSIGN_GLOB,
   POP,
   ADD,
   SUB,
@@ -56,16 +59,14 @@ struct VortexValue {
     switch (Type) {
     case ValueType::DOUBLE:
       return std::to_string(Value.AsDouble);
-      break;
     case ValueType::BOOL:
       return Value.AsBool == true ? "true" : "false";
-      break;
     case ValueType::NIL:
       return "nil";
-      break;
     case ValueType::OBJECT:
       return Value.AsObject->asString();
     }
+    return "unknown";
   }
 };
 

@@ -26,7 +26,7 @@ public:
   auto dissassemble(std::string_view output_filename) -> void;
   auto dissassembleInstruction(std::size_t &i) -> std::string;
 
-  auto getConstant(std::uint8_t index) -> VortexValue const {
+  auto getConstant(std::uint32_t index) -> VortexValue const {
     return Constants[index];
   }
   // i is the index of the instruction
