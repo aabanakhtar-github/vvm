@@ -24,6 +24,7 @@ enum OpCode : std::uint8_t {
   GREATER_EQ, // >=
   GREATER,    // >
   LESS,       // <
+  PRINT,
   HALT,
   INVALID_OP
 };

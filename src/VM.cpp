@@ -101,6 +101,9 @@ auto VM::executeOp() -> VMState {
   case GREATER_EQ:
     greaterThanOrEqual();
     break;
+  case PRINT:
+    print(pop());
+    break;
   case HALT:
     state_ = VMState::HALTED;
     break;
@@ -115,6 +118,13 @@ auto VM::executeOp() -> VMState {
     ++PC_;
   }
   return state_;
+}
+
+auto VM::print(VortexValue value) -> void {
+  switch (value.Type) {
+  default:
+    abort();
+  }
 }
 
 auto VM::pushc() -> void {
