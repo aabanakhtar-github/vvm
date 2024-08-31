@@ -121,10 +121,9 @@ auto VM::executeOp() -> VMState {
 }
 
 auto VM::print(VortexValue value) -> void {
-  switch (value.Type) {
-  default:
-    abort();
-  }
+  // substr removes quotes around the string.
+  // will add switching to fix it up with other objs
+  std::cout << value.asString().substr(1, value.asString().size() - 2) << "\n";
 }
 
 auto VM::pushc() -> void {
@@ -186,6 +185,10 @@ auto VM::add() -> void {
     switch (a.Value.AsObject->Type) {
     case ObjectType::STR: {
       // Convert these to string objects type
+      assert(b.Type == ValueType::OBJECT &&
+             "Code generation error: Cannot add string and non-string.");
+      assert(b.Value.AsObject->Type == ObjectType::STR &&
+             "Code generation error: Cannot add string and non-string.");
       auto string_object1 = dynamic_cast<StringObject *>(a.Value.AsObject);
       auto string_object2 = dynamic_cast<StringObject *>(b.Value.AsObject);
       // add em all up
@@ -200,8 +203,11 @@ auto VM::add() -> void {
       break;
     }
     }
+    break;
   }
   case ValueType::DOUBLE: {
+    assert(b.Type == ValueType::DOUBLE &&
+           "Code generation error: Cannot add double and non-double.");
     // handle regular addition here
     auto result = a.Value.AsDouble + b.Value.AsDouble;
     push(VortexValue{.Type = ValueType::DOUBLE, .Value{.AsDouble = result}});

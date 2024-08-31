@@ -18,6 +18,7 @@ class VM {
 public:
   explicit VM(Program &bytecode);
   auto run() -> VMState;
+  auto printStack() -> void;
 
 private:
   auto executeOp() -> VMState;
@@ -45,7 +46,6 @@ private:
   auto check(VMState for_state, std::size_t expected_size = 0) -> bool;
 
   // util
-  auto printStack() -> void;
   auto isTrue(VortexValue val) -> bool {
     if (val.Type == ValueType::BOOL) {
       return val.Value.AsBool;

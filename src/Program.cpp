@@ -44,6 +44,8 @@ auto Program::dissassemble(std::string_view output_filename) -> void {
 }
 
 auto Program::dissassembleInstruction(std::size_t &i) -> std::string {
+  // TODO: just change the name to something
+  // like "line" or "instruction"
   auto codename = std::to_string(lines_[i]) + ": ";
   switch (Bytecode[i]) {
   case PUSHC:
@@ -103,13 +105,16 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
   case PUSH_FALSE:
     ++i;
     return "PUSH_FALSE";
+  case PRINT:
+    ++i;
+    return "PRINT";
   }
   return "";
 }
 
 auto Program::dissassembleConstant(std::size_t &i) -> std::string {
   assert(i + 3 < Bytecode.size() &&
-         "Not enought bytecode to disassemble constant instruction");
+         "Not enought bytecode to disassemble push constant instruction");
   auto b1 = static_cast<std::int32_t>(
       Bytecode[i + 1]); // the three bytes of the instruction
   auto b2 = static_cast<std::int32_t>(Bytecode[i + 2]);
@@ -120,3 +125,5 @@ auto Program::dissassembleConstant(std::size_t &i) -> std::string {
   i += 4; // 4 byte instruction (instr b0, b1, b2)
   return instr;
 }
+
+auto Program::dissassemblePrint(std::size_t &i) -> std::string { return ""; }

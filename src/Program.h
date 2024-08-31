@@ -34,7 +34,9 @@ private:
   auto dissassembleRegular(std::size_t &i)
       -> std::string; // Dissassemble single byte instructions
   auto dissassembleConstant(std::size_t &i)
-      -> std::string; // Dissassemble LD_CONST [2 bytes]
+      -> std::string; // Dissassemble PUSHC [4 bytes]
+  auto dissassemblePrint(std::size_t &i) -> std::string;
+
 private:
   std::vector<std::size_t> lines_; // TODO: more efficient storage strategy
 };
