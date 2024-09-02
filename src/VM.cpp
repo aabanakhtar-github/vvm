@@ -104,6 +104,12 @@ auto VM::executeOp() -> VMState {
   case PRINT:
     print(pop());
     break;
+  case LOAD_GLOB:
+    loadGlob();
+    break;
+  case SAVE_GLOB:
+    saveGlob();
+    break;
   case HALT:
     state_ = VMState::HALTED;
     break;
@@ -123,7 +129,9 @@ auto VM::executeOp() -> VMState {
 auto VM::print(VortexValue value) -> void {
   // substr removes quotes around the string.
   // will add switching to fix it up with other objs
-  std::cout << value.asString().substr(1, value.asString().size() - 2) << "\n";
+  // std::cout << value.asString().substr(1, value.asString().size() - 2) <<
+  // "\n";
+  std::cout << value.asString() << "\n";
 }
 
 auto VM::pushc() -> void {
@@ -173,10 +181,6 @@ auto VM::push(VortexValue value) -> void {
 
 auto VM::add() -> void {
   // TODO: debug assertions in the vortex error format see trello for more
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
   switch (a.Type) {
@@ -221,10 +225,6 @@ auto VM::add() -> void {
 }
 
 auto VM::sub() -> void {
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
   // TODO: type checking
@@ -233,10 +233,6 @@ auto VM::sub() -> void {
 }
 
 auto VM::mul() -> void {
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
   // TODO: type checking
@@ -245,10 +241,6 @@ auto VM::mul() -> void {
 }
 
 auto VM::div() -> void {
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
   if (b.Value.AsDouble == 0.0) {
@@ -262,10 +254,6 @@ auto VM::div() -> void {
 }
 
 auto VM::knot() -> void {
-  if (!check(VMState::STACK_UNDERFLOW, 1)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto rhs = pop();
   auto val = VortexValue{};
   val.Type = ValueType::BOOL;
@@ -274,22 +262,17 @@ auto VM::knot() -> void {
 }
 
 auto VM::negate() -> void {
-  if (!check(VMState::STACK_UNDERFLOW, 1)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto rhs = pop();
   push(VortexValue{.Type = ValueType::DOUBLE, .Value = {-rhs.Value.AsDouble}});
 }
 
 auto VM::eq() -> void {
   // TODO: typechecking  using assert and then a dedicated static analysis
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
+  // WARNING: This doesnt check for objects yet
+  assert(a.Type == b.Type && "Code Generation Error: A & B must be of the same "
+                             "time in equality operation");
   auto val = VortexValue{};
   val.Type = ValueType::BOOL;
   val.Value.AsBool = a.Value.AsDouble == b.Value.AsDouble;
@@ -298,12 +281,12 @@ auto VM::eq() -> void {
 }
 
 auto VM::lessThanOrEqual() -> void {
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
+  assert(a.Type == b.Type && "Code Generation Error: A & B must be of the same "
+                             "time in equality operation");
+  assert(a.Type == ValueType::DOUBLE &&
+         "Code Generation Error: A & B must be of double to do <=.");
   auto val = VortexValue{};
   val.Type = ValueType::BOOL;
   val.Value.AsBool = a.Value.AsDouble <= b.Value.AsDouble;
@@ -312,12 +295,12 @@ auto VM::lessThanOrEqual() -> void {
 
 auto VM::greaterThanOrEqual() -> void {
   // TODO: typechecking  using assert and then a dedicated static analysis
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
+  assert(a.Type == b.Type && "Code Generation Error: A & B must be of the same "
+                             "time in equality operation");
+  assert(a.Type == ValueType::DOUBLE &&
+         "Code Generation Error: A & B Must be of double to do >=");
   auto val = VortexValue{};
   val.Type = ValueType::BOOL;
   val.Value.AsBool = a.Value.AsDouble >= b.Value.AsDouble;
@@ -326,13 +309,12 @@ auto VM::greaterThanOrEqual() -> void {
 }
 
 auto VM::greater() -> void {
-  // TODO: typechecking  using assert and then a dedicated static analysis
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
+  assert(a.Type == b.Type && "Code Generation Error: A & B must be of the same "
+                             "time in equality operation");
+  assert(a.Type == ValueType::DOUBLE &&
+         "Code Generation Error: A & B Must be of double to do >=");
   auto val = VortexValue{};
   val.Type = ValueType::BOOL;
   val.Value.AsBool = a.Value.AsDouble > b.Value.AsDouble;
@@ -342,12 +324,12 @@ auto VM::greater() -> void {
 
 auto VM::less() -> void {
   // TODO: typechecking  using assert and then a dedicated static analysis
-  if (!check(VMState::STACK_UNDERFLOW, 2)) {
-    state_ = VMState::STACK_UNDERFLOW;
-    return;
-  }
   auto b = pop();
   auto a = pop();
+  assert(a.Type == b.Type && "Code Generation Error: A & B must be of the same "
+                             "time in equality operation");
+  assert(a.Type == ValueType::DOUBLE &&
+         "Code Generation Error: A & B Must be of double to do >=");
   auto val = VortexValue{};
   val.Type = ValueType::BOOL;
   val.Value.AsBool = a.Value.AsDouble < b.Value.AsDouble;
@@ -355,10 +337,35 @@ auto VM::less() -> void {
   push(val);
 }
 
+// TODO: upgrade to 24bit numbers for loading globals like PUSHC.
+auto VM::loadGlob() -> void {
+  auto index_vv = pop();
+  assert(index_vv.Type == ValueType::DOUBLE &&
+         "Code Generation Error: Loading Global without index!");
+  auto index = index_vv.Value.AsDouble;
+  assert(index < bytecode_.Globals.size() &&
+         "Code Generation Error: Loading unknown global.");
+  auto glob = bytecode_.Globals[index];
+  push(glob);
+}
+
+// TODO: bring back those checks :(
+// OP | index |
+auto VM::saveGlob() -> void {
+  auto assigned_value = pop();
+  auto index_vv = pop();
+  assert(index_vv.Type == ValueType::DOUBLE &&
+         "Code Generation Error: Loading Global without index!");
+  auto index = index_vv.Value.AsDouble;
+  assert(index < bytecode_.Globals.size() &&
+         "Code Generation Error: Loading unknown global.");
+  bytecode_.Globals[index] = assigned_value;
+}
+
 auto VM::check(VMState for_state, std::size_t expected_size) -> bool {
   assert((for_state == VMState::STACK_OVERFLOW ||
           for_state == VMState::STACK_UNDERFLOW) &&
-         "Cannot check for unknowable states.");
+         "Cannot check for non-stack status states.");
   switch (for_state) {
   case VMState::STACK_OVERFLOW:
     if (stack_top_ >= STACK_SIZE_) {
@@ -382,4 +389,19 @@ auto VM::printStack() -> void {
   for (std::size_t i = 0; i < stack_top_; ++i) {
     std::cout << stack_[i].asString() << "\n";
   }
+}
+
+auto VM::loadGlobal(std::size_t index) -> void {
+  assert(bytecode_.Globals.size() > index &&
+         "Code Generation Error: Undefined Global!");
+  auto value = bytecode_.Globals[index];
+  push(value);
+}
+
+auto VM::updateGlobal(std::size_t index) -> void {
+  assert(bytecode_.Globals.size() > index &&
+         "Code Generation Error: Undefined Global!");
+  auto &value = bytecode_.Globals[index];
+  auto new_value = pop();
+  value = new_value;
 }

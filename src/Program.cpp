@@ -108,6 +108,12 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
   case PRINT:
     ++i;
     return "PRINT";
+  case SAVE_GLOB:
+    ++i;
+    return "STORE_GLOB";
+  case LOAD_GLOB:
+    ++i;
+    return "LOAD_GLOB";
   }
   return "";
 }
@@ -126,4 +132,12 @@ auto Program::dissassembleConstant(std::size_t &i) -> std::string {
   return instr;
 }
 
-auto Program::dissassemblePrint(std::size_t &i) -> std::string { return ""; }
+auto Program::createGlobal(std::string_view name,
+                           VortexValue val) -> std::size_t {
+  auto index = Globals.size();
+  Globals.push_back(val);
+  assert(global_to_index_.contains(std::string{name}) == false &&
+         "Code Generation Error: Cannot create already defined global.");
+  global_to_index_[std::string{name}] = index;
+  return index;
+}

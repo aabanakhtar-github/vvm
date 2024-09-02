@@ -41,10 +41,14 @@ private:
   auto pushNil() -> void;
   auto pushBool(bool val) -> void;
   auto print(VortexValue val) -> void;
+  auto loadGlob() -> void;
+  auto saveGlob() -> void;
   // safety
   // returns true if the state is ok.
   auto check(VMState for_state, std::size_t expected_size = 0) -> bool;
-
+  // global variables stuff
+  auto loadGlobal(std::size_t index) -> void;
+  auto updateGlobal(std::size_t index) -> void; // Give the global a new value
   // util
   auto isTrue(VortexValue val) -> bool {
     if (val.Type == ValueType::BOOL) {

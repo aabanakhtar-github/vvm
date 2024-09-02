@@ -11,7 +11,6 @@ enum OpCode : std::uint8_t {
   PUSH_NIL,
   SAVE_GLOB,
   LOAD_GLOB,
-  ASSIGN_GLOB,
   POP,
   ADD,
   SUB,
