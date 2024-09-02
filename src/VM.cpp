@@ -350,7 +350,6 @@ auto VM::loadGlob() -> void {
 }
 
 // TODO: bring back those checks :(
-// OP | index |
 auto VM::saveGlob() -> void {
   auto assigned_value = pop();
   auto index_vv = pop();
