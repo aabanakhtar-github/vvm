@@ -39,6 +39,9 @@ public:
            "Non existent global!");
     return global_to_index_[std::string{name}];
   }
+  auto globalExists(std::string_view name) -> bool const {
+    return global_to_index_.contains(std::string{name});
+  }
 
 private:
   // i is the index of the instruction, used to update index for dissassembler.

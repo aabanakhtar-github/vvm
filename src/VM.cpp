@@ -339,7 +339,7 @@ auto VM::less() -> void {
 
 // TODO: upgrade to 24bit numbers for loading globals like PUSHC.
 auto VM::loadGlob() -> void {
-  auto index_vv = pop();
+  auto index_vv = pop(); // index of this vortex value
   assert(index_vv.Type == ValueType::DOUBLE &&
          "Code Generation Error: Loading Global without index!");
   auto index = index_vv.Value.AsDouble;
@@ -351,8 +351,8 @@ auto VM::loadGlob() -> void {
 
 // TODO: bring back those checks :(
 auto VM::saveGlob() -> void {
+  auto index_vv = pop(); // index of the global as a vortex value
   auto assigned_value = pop();
-  auto index_vv = pop();
   assert(index_vv.Type == ValueType::DOUBLE &&
          "Code Generation Error: Loading Global without index!");
   auto index = index_vv.Value.AsDouble;
