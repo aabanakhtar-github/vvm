@@ -24,6 +24,9 @@ enum OpCode : std::uint8_t {
   GREATER,    // >
   LESS,       // <
   PRINT,
+  ADD_LOCAL,
+  GET_LOCAL,
+  SET_LOCAL,
   HALT,
   INVALID_OP
 };

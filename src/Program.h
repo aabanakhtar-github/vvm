@@ -37,6 +37,9 @@ public:
   auto getGlobalIndex(std::string_view name) -> std::size_t {
     assert(global_to_index_.contains(std::string{name}) &&
            "Non existent global!");
+    if (!global_to_index_.contains(std::string{name})) {
+      return (std::size_t(-1));
+    }
     return global_to_index_[std::string{name}];
   }
   auto globalExists(std::string_view name) -> bool const {

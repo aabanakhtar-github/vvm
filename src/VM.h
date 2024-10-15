@@ -43,6 +43,9 @@ private:
   auto print(VortexValue val) -> void;
   auto loadGlob() -> void;
   auto saveGlob() -> void;
+  auto getLocal() -> void;
+  auto addLocal() -> void;
+  auto setLocal() -> void;
   // safety
   // returns true if the state is ok.
   auto check(VMState for_state, std::size_t expected_size = 0) -> bool;

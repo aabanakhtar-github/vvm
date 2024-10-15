@@ -114,6 +114,15 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
   case LOAD_GLOB:
     ++i;
     return "LOAD_GLOB";
+  case ADD_LOCAL:
+    ++i;
+    return "ADD_LOCAL";
+  case SET_LOCAL:
+    ++i;
+    return "SET_LOCAL";
+  case GET_LOCAL:
+    ++i;
+    return "GET_LOCAL";
   }
   return "";
 }

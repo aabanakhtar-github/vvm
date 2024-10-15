@@ -113,6 +113,15 @@ auto VM::executeOp() -> VMState {
   case HALT:
     state_ = VMState::HALTED;
     break;
+  case ADD_LOCAL:
+    addLocal();
+    break;
+  case GET_LOCAL:
+    getLocal();
+    break;
+  case SET_LOCAL:
+    setLocal();
+    break;
   default:
     state_ = VMState::RUNTIME_ERR;
     error_ = "Invalid instruction!";
@@ -322,6 +331,7 @@ auto VM::greater() -> void {
   push(val);
 }
 
+// stack checks
 auto VM::less() -> void {
   // TODO: typechecking  using assert and then a dedicated static analysis
   auto b = pop();
@@ -351,6 +361,7 @@ auto VM::loadGlob() -> void {
 
 // TODO: bring back those checks :(
 auto VM::saveGlob() -> void {
+
   auto index_vv = pop(); // index of the global as a vortex value
   auto assigned_value = pop();
   assert(index_vv.Type == ValueType::DOUBLE &&
@@ -404,3 +415,9 @@ auto VM::updateGlobal(std::size_t index) -> void {
   auto new_value = pop();
   value = new_value;
 }
+
+auto VM::addLocal() -> void {}
+
+auto VM::setLocal() -> void {}
+
+auto VM::getLocal() -> void {}
