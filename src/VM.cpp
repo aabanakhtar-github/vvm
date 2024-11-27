@@ -1,4 +1,5 @@
 #include "VM.h"
+#include "Util.h"
 #include "VortexTypes.h"
 #include <cassert>
 #include <iostream>
@@ -434,13 +435,13 @@ auto VM::setLocal() -> void {
     return;
   }
   auto idx = pop().Value.AsDouble;
-  auto value = pop(); 
+  auto value = pop();
   auto local_stack_idx = locals_[idx];
   auto &local = stack_[local_stack_idx];
-  local = value; 
+  local = value;
 }
 
-auto VM::popLocal() -> void { 
+auto VM::popLocal() -> void {
   if (!check(VMState::STACK_UNDERFLOW, 1)) {
     state_ = VMState::STACK_UNDERFLOW;
     return;
@@ -455,6 +456,35 @@ auto VM::getLocal() -> void {
     state_ = VMState::STACK_UNDERFLOW;
     return;
   }
-  auto idx = pop(); 
+  auto idx = pop();
   push(stack_[locals_[static_cast<std::size_t>(idx.Value.AsDouble)]]);
+}
+
+auto VM::jmp() -> void {
+  // offset bytes
+  auto b1 = bytecode_.Bytecode[++PC_];
+  auto b2 = bytecode_.Bytecode[++PC_];
+  // dont increment last byte because it doesnt matter
+  auto b3 = bytecode_.Bytecode[PC_];
+  auto offset_combined = (b1 << 16) + (b2 << 8) + b3;
+  assert(offset_combined < bytecode_.Bytecode.size());
+  // move to the specific instruction - 1 to make it the next instruction
+  PC_ = offset_combined - 1;
+}
+
+auto VM::jmpToIfFalse() -> void {
+  auto eval = pop().Value.AsBool;
+  if (!eval) {
+    // similar to jmp
+    auto b1 = bytecode_.Bytecode[++PC_];
+    auto b2 = bytecode_.Bytecode[++PC_];
+    // dont increment last byte because it doesnt matter anymore
+    auto b3 = bytecode_.Bytecode[PC_];
+    auto offset_combined = (b1 << 16) + (b2 << 8) + b3;
+    assert(offset_combined < bytecode_.Bytecode.size());
+    // move to the specific instruction - 1 to make it the next instruction
+    PC_ = offset_combined;
+    return;
+  }
+  // else do nothing.
 }

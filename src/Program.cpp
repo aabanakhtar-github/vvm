@@ -123,6 +123,10 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
   case GET_LOCAL:
     ++i;
     return "GET_LOCAL";
+  case JMP_TO:
+  case JMP_TO_IF_FALSE:
+    // TODO: fix
+    return "";
   }
   return "";
 }

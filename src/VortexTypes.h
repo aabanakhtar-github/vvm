@@ -28,6 +28,8 @@ enum OpCode : std::uint8_t {
   GET_LOCAL,
   SET_LOCAL,
   POP_LOCAL,
+  JMP_TO,
+  JMP_TO_IF_FALSE,
   HALT,
   INVALID_OP
 };

@@ -47,6 +47,8 @@ private:
   auto addLocal() -> void;
   auto setLocal() -> void;
   auto popLocal() -> void;
+  auto jmp() -> void;
+  auto jmpToIfFalse() -> void;
   // safety
   // returns true if the state is ok.
   auto check(VMState for_state, std::size_t expected_size = 0) -> bool;
