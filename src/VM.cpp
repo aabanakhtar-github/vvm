@@ -122,6 +122,9 @@ auto VM::executeOp() -> VMState {
   case SET_LOCAL:
     setLocal();
     break;
+  case POP_LOCAL:
+    popLocal();
+    break;
   default:
     state_ = VMState::RUNTIME_ERR;
     error_ = "Invalid instruction!";
@@ -416,8 +419,42 @@ auto VM::updateGlobal(std::size_t index) -> void {
   value = new_value;
 }
 
-auto VM::addLocal() -> void {}
+auto VM::addLocal() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto stack_location = stack_top_ - 1;
+  locals_.push_back(stack_location);
+}
 
-auto VM::setLocal() -> void {}
+auto VM::setLocal() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto idx = pop().Value.AsDouble;
+  auto value = pop(); 
+  auto local_stack_idx = locals_[idx];
+  auto &local = stack_[local_stack_idx];
+  local = value; 
+}
 
-auto VM::getLocal() -> void {}
+auto VM::popLocal() -> void { 
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  pop();
+  // remove the last local (being removed)
+  locals_.resize(locals_.size() - 1);
+}
+
+auto VM::getLocal() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  auto idx = pop(); 
+  push(stack_[locals_[static_cast<std::size_t>(idx.Value.AsDouble)]]);
+}

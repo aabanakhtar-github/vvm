@@ -27,6 +27,7 @@ enum OpCode : std::uint8_t {
   ADD_LOCAL,
   GET_LOCAL,
   SET_LOCAL,
+  POP_LOCAL,
   HALT,
   INVALID_OP
 };

@@ -46,6 +46,7 @@ private:
   auto getLocal() -> void;
   auto addLocal() -> void;
   auto setLocal() -> void;
+  auto popLocal() -> void;
   // safety
   // returns true if the state is ok.
   auto check(VMState for_state, std::size_t expected_size = 0) -> bool;
@@ -70,6 +71,8 @@ private:
   Program &bytecode_;
   std::array<VortexValue, STACK_SIZE_> stack_;
   std::string error_;
+  // local variables are just indicies on a stack
+  std::vector<std::size_t> locals_;
 };
 
 #endif // !VM_H
