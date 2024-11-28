@@ -71,8 +71,9 @@ struct VortexValue {
       return "nil";
     case ValueType::OBJECT:
       return Value.AsObject->asString();
+    default:
+      return "unknown";
     }
-    return "unknown";
   }
 };
 

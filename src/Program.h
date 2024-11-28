@@ -3,6 +3,7 @@
 
 #include "VortexTypes.h"
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string_view>
@@ -18,8 +19,8 @@ public:
       Objects; // the VM's memory is here it's kinda weird
 public:
   Program() = default;
-
-  auto pushCode(std::uint8_t code, std::size_t line) -> void;
+  // returns index of byte
+  auto pushCode(std::uint8_t code, std::size_t line) -> std::size_t;
   // Creates a string on the objects list, returns a pointer to it's location on
   // the object store will use to create a VortexValue -> push it as a constant
   // -> access it as an Object *

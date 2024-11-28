@@ -7,9 +7,10 @@
 
 static constexpr auto UINT24_MAX = 16'777'215;
 
-auto Program::pushCode(std::uint8_t code, std::size_t line) -> void {
+auto Program::pushCode(std::uint8_t code, std::size_t line) -> std::size_t {
   Bytecode.push_back(code);
   lines_.push_back(line);
+  return Bytecode.size() - 1;
 }
 
 auto Program::addConstant(VortexValue constant) -> std::int32_t {
@@ -124,9 +125,12 @@ auto Program::dissassembleRegular(std::size_t &i) -> std::string {
     ++i;
     return "GET_LOCAL";
   case JMP_TO:
+    ++i;
+    return "JMP_TO";
   case JMP_TO_IF_FALSE:
     // TODO: fix
-    return "";
+    ++i;
+    return "JMP_TO_IF_FALSE";
   }
   return "";
 }
@@ -142,7 +146,7 @@ auto Program::dissassembleConstant(std::size_t &i) -> std::string {
   auto instr = "PUSHC " + std::to_string(constant_index);
 
   i += 4; // 4 byte instruction (instr b0, b1, b2)
-  return instr;
+  return instr + "\n extra byte \n extra byte \n extra byte";
 }
 
 auto Program::createGlobal(std::string_view name,

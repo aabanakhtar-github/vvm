@@ -3,6 +3,7 @@
 #include "VortexTypes.h"
 #include <cassert>
 #include <iostream>
+#include <ostream>
 
 #define DO_BINARY_OP
 
@@ -24,7 +25,8 @@ auto VM::run() -> VMState {
   case VMState::RUNTIME_ERR:
     // TODO: add support for proper error handling between both the front and
     // the back
-    std::cerr << "TODO: addd support for proper error handling.\n";
+    std::cerr
+        << "TODO: addd support for proper error handling. RUNTIME ERROR\n";
     break;
   case VMState::STACK_OVERFLOW:
     std::cerr << "Stack overflow!\n";
@@ -126,6 +128,12 @@ auto VM::executeOp() -> VMState {
   case POP_LOCAL:
     popLocal();
     break;
+  case JMP_TO:
+    jmp();
+    break;
+  case JMP_TO_IF_FALSE:
+    jmpToIfFalse();
+    break;
   default:
     state_ = VMState::RUNTIME_ERR;
     error_ = "Invalid instruction!";
@@ -179,8 +187,9 @@ auto VM::pop() -> VortexValue {
     state_ = VMState::STACK_UNDERFLOW;
     return {};
   }
-  --stack_top_;              // shrink the stack
-  return stack_[stack_top_]; // return the element
+  --stack_top_;
+  std::cout << stack_[stack_top_].asString() << std::endl; // shrink the stack
+  return stack_[stack_top_];                               // return the element
 }
 
 auto VM::push(VortexValue value) -> void {
@@ -461,30 +470,30 @@ auto VM::getLocal() -> void {
 }
 
 auto VM::jmp() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 1)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    std::cout << 2 << std::endl;
+    return;
+  }
   // offset bytes
-  auto b1 = bytecode_.Bytecode[++PC_];
-  auto b2 = bytecode_.Bytecode[++PC_];
-  // dont increment last byte because it doesnt matter
-  auto b3 = bytecode_.Bytecode[PC_];
-  auto offset_combined = (b1 << 16) + (b2 << 8) + b3;
-  assert(offset_combined < bytecode_.Bytecode.size());
+  auto offset = static_cast<std::size_t>(pop().Value.AsDouble);
+  assert(offset < bytecode_.Bytecode.size());
   // move to the specific instruction - 1 to make it the next instruction
-  PC_ = offset_combined - 1;
+  PC_ = offset - 1;
 }
 
 auto VM::jmpToIfFalse() -> void {
+  if (!check(VMState::STACK_UNDERFLOW, 2)) {
+    state_ = VMState::STACK_UNDERFLOW;
+    return;
+  }
+  // offset bytes
+  auto offset = static_cast<std::size_t>(pop().Value.AsDouble);
   auto eval = pop().Value.AsBool;
   if (!eval) {
     // similar to jmp
-    auto b1 = bytecode_.Bytecode[++PC_];
-    auto b2 = bytecode_.Bytecode[++PC_];
-    // dont increment last byte because it doesnt matter anymore
-    auto b3 = bytecode_.Bytecode[PC_];
-    auto offset_combined = (b1 << 16) + (b2 << 8) + b3;
-    assert(offset_combined < bytecode_.Bytecode.size());
-    // move to the specific instruction - 1 to make it the next instruction
-    PC_ = offset_combined;
+    assert(offset < bytecode_.Bytecode.size());
+    PC_ = offset - 1;
     return;
   }
-  // else do nothing.
 }
