@@ -476,7 +476,7 @@ auto VM::jmp() -> void {
   }
   // offset bytes
   auto offset = static_cast<std::size_t>(pop().Value.AsDouble);
-  std::cout << "of" << offset << std::endl;
+  std::cout << "of " << offset << std::endl;
   assert(offset < bytecode_.Bytecode.size());
   // move to the specific instruction - 1 to make it the next instruction
   PC_ = offset - 1;
