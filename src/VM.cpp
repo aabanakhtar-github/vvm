@@ -150,8 +150,12 @@ auto VM::executeOp() -> VMState {
 auto VM::print(VortexValue value) -> void {
   // substr removes quotes around the string.
   // will add switching to fix it up with other objs
-  // std::cout << value.asString().substr(1, value.asString().size() - 2) <<
-  // "\n";
+  if (value.Type == ValueType::OBJECT &&
+      value.Value.AsObject->Type == ObjectType::STR) {
+    std::cout << value.asString().substr(1, value.asString().size() - 2)
+              << "\n";
+    return;
+  }
   std::cout << value.asString() << "\n";
 }
 
@@ -187,7 +191,6 @@ auto VM::pop() -> VortexValue {
     state_ = VMState::STACK_UNDERFLOW;
     return {};
   }
-  std::cout << PC_ << std::endl;
   --stack_top_;              // srhink the stack
   return stack_[stack_top_]; // return the element
 }
@@ -476,7 +479,6 @@ auto VM::jmp() -> void {
   }
   // offset bytes
   auto offset = static_cast<std::size_t>(pop().Value.AsDouble);
-  std::cout << "of " << offset << std::endl;
   assert(offset < bytecode_.Bytecode.size());
   // move to the specific instruction - 1 to make it the next instruction
   PC_ = offset - 1;
@@ -491,7 +493,6 @@ auto VM::jmpToIfFalse() -> void {
   auto offset = static_cast<std::size_t>(pop().Value.AsDouble);
   auto eval = pop().Value.AsBool;
   if (!eval) {
-    std::cout << "DEBUG: " << offset << std::endl;
     // similar to jmp
     assert(offset < bytecode_.Bytecode.size());
     PC_ = offset - 1;
